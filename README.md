@@ -6,6 +6,13 @@ Configure and harden SSH daemon.
 
 - Debian/Ubuntu
 
+## Supported Distributions
+
+- Debian (bullseye, bookworm)
+- Ubuntu (focal, jammy, noble)
+
+Other distributions will fail with an error message.
+
 ## Role Variables
 
 ### Basic
@@ -68,6 +75,12 @@ Configure and harden SSH daemon.
 | `sshd_use_pam` | `yes` | Use PAM |
 | `sshd_print_motd` | `no` | Print MOTD |
 
+### Distro-specific (auto-detected)
+
+| Variable | Debian/Ubuntu | RHEL/Rocky |
+|----------|---------------|------------|
+| `sshd_service_name` | `ssh` | `sshd` |
+
 ## Backup
 
 Original configuration is backed up to `/etc/ssh/sshd_config.orig` on first run.
@@ -117,6 +130,12 @@ Checklist before running:
 2. SSH key added to user
 3. User has sudo access (ansible-role-sudo)
 4. User is in `sshd_allow_users` or `sshd_allow_groups`
+
+## Adding new distribution support
+
+1. Create `vars/<DistributionName>.yml` with `sshd_service_name`
+2. Add distribution to supported list in `tasks/main.yml`
+3. Update `meta/main.yml` platforms
 
 ## License
 

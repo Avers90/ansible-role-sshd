@@ -1,4 +1,14 @@
 ---
+---
+- name: sshd | Fail if distro is not supported
+  ansible.builtin.fail:
+    msg: "Distribution '{{ ansible_distribution }}' is not supported. Supported: Debian, Ubuntu"
+  when: ansible_distribution not in ['Debian', 'Ubuntu']
+
+- name: sshd | Include distro-specific variables
+  ansible.builtin.include_vars:
+    file: "{{ ansible_distribution }}.yml"
+
 - name: sshd | Check if sshd_config backup exists
   ansible.builtin.stat:
     path: /etc/ssh/sshd_config.orig
