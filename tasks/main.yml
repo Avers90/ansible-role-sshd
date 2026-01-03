@@ -1,0 +1,25 @@
+---
+- name: sshd | Check if sshd_config backup exists
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config.orig
+  register: sshd_backup
+
+- name: sshd | Backup original sshd_config
+  ansible.builtin.copy:
+    src: /etc/ssh/sshd_config
+    dest: /etc/ssh/sshd_config.orig
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+  when: not sshd_backup.stat.exists
+
+- name: sshd | Deploy sshd configuration
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "sshd -t -f %s"
+  notify: Restart sshd

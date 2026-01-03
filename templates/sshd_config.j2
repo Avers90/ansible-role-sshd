@@ -1,0 +1,57 @@
+# {{ ansible_managed }}
+
+Include /etc/ssh/sshd_config.d/*.conf
+
+Port {{ sshd_port }}
+AddressFamily {{ sshd_address_family }}
+
+# Logging
+LogLevel {{ sshd_log_level }}
+
+# Authentication
+LoginGraceTime {{ sshd_login_grace_time }}
+PermitRootLogin {{ sshd_permit_root_login }}
+StrictModes {{ sshd_strict_modes }}
+MaxAuthTries {{ sshd_max_auth_tries }}
+MaxSessions {{ sshd_max_sessions }}
+MaxStartups {{ sshd_max_startups }}
+
+PubkeyAuthentication {{ sshd_pubkey_authentication }}
+PasswordAuthentication {{ sshd_password_authentication }}
+PermitEmptyPasswords {{ sshd_permit_empty_passwords }}
+KbdInteractiveAuthentication {{ sshd_kbd_interactive_authentication }}
+HostbasedAuthentication {{ sshd_hostbased_authentication }}
+IgnoreRhosts {{ sshd_ignore_rhosts }}
+PermitUserEnvironment {{ sshd_permit_user_environment }}
+
+{% if sshd_allow_users | length > 0 %}
+AllowUsers {{ sshd_allow_users | join(' ') }}
+{% endif %}
+
+{% if sshd_allow_groups | length > 0 %}
+AllowGroups {{ sshd_allow_groups | join(' ') }}
+{% endif %}
+
+# Crypto
+Ciphers {{ sshd_ciphers }}
+MACs {{ sshd_macs }}
+KexAlgorithms {{ sshd_kex_algorithms }}
+
+# Forwarding
+X11Forwarding {{ sshd_x11_forwarding }}
+AllowTcpForwarding {{ sshd_allow_tcp_forwarding }}
+AllowAgentForwarding {{ sshd_allow_agent_forwarding }}
+
+# Connection
+TCPKeepAlive {{ sshd_tcp_keep_alive }}
+ClientAliveInterval {{ sshd_client_alive_interval }}
+ClientAliveCountMax {{ sshd_client_alive_count_max }}
+UseDNS {{ sshd_use_dns }}
+
+# Other
+UsePAM {{ sshd_use_pam }}
+PrintMotd {{ sshd_print_motd }}
+
+AcceptEnv LANG LC_*
+
+Subsystem sftp /usr/lib/openssh/sftp-server

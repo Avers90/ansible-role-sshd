@@ -1,0 +1,43 @@
+---
+sshd_port: 22
+sshd_address_family: inet
+
+# Authentication
+sshd_permit_root_login: "no"
+sshd_password_authentication: "no"
+sshd_permit_empty_passwords: "no"
+sshd_pubkey_authentication: "yes"
+sshd_kbd_interactive_authentication: "no"
+sshd_hostbased_authentication: "no"
+sshd_ignore_rhosts: "yes"
+sshd_permit_user_environment: "no"
+sshd_strict_modes: "yes"
+
+sshd_login_grace_time: 30
+sshd_max_auth_tries: 3
+sshd_max_sessions: 10
+sshd_max_startups: "10:30:60"
+
+sshd_allow_users: []
+sshd_allow_groups: []
+
+# Forwarding
+sshd_x11_forwarding: "no"
+sshd_allow_tcp_forwarding: "no"
+sshd_allow_agent_forwarding: "no"
+
+# Connection
+sshd_tcp_keep_alive: "yes"
+sshd_client_alive_interval: 600
+sshd_client_alive_count_max: 3
+sshd_use_dns: "no"
+
+# Crypto (modern and secure)
+sshd_ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
+sshd_macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256"
+sshd_kex_algorithms: "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512"
+
+# Other
+sshd_log_level: VERBOSE
+sshd_use_pam: "yes"
+sshd_print_motd: "no"

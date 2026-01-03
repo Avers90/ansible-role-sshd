@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: Avers90
+  description: Configure and harden SSH daemon
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+
+dependencies: []
+
+allow_duplicates: false
