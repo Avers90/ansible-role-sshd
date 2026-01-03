@@ -23,6 +23,31 @@
     mode: "0644"
   when: not sshd_backup.stat.exists
 
+- name: sshd | Check if sshd_config.d backup exists
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config.d.orig
+  register: sshd_config_d_backup
+  when: sshd_clean_config_d
+
+- name: sshd | Backup sshd_config.d directory
+  ansible.builtin.copy:
+    src: /etc/ssh/sshd_config.d/
+    dest: /etc/ssh/sshd_config.d.orig/
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
+  when:
+    - sshd_clean_config_d
+    - not sshd_config_d_backup.stat.exists
+
+- name: sshd | Remove all files in sshd_config.d
+  ansible.builtin.shell: rm -f /etc/ssh/sshd_config.d/*.conf
+  args:
+    removes: /etc/ssh/sshd_config.d/*.conf
+  notify: Restart sshd
+  when: sshd_clean_config_d
+
 - name: sshd | Deploy sshd configuration
   ansible.builtin.template:
     src: sshd_config.j2

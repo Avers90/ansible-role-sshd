@@ -21,6 +21,7 @@ Other distributions will fail with an error message.
 |----------|---------|-------------|
 | `sshd_port` | `22` | SSH port |
 | `sshd_address_family` | `inet` | Address family (inet, inet6, any) |
+| `sshd_clean_config_d` | `false` | Remove all files from /etc/ssh/sshd_config.d/ |
 
 ### Authentication
 
@@ -83,13 +84,35 @@ Other distributions will fail with an error message.
 
 ## Backup
 
-Original configuration is backed up to `/etc/ssh/sshd_config.orig` on first run.
+- Original configuration is backed up to `/etc/ssh/sshd_config.orig` on first run
+- Original sshd_config.d files are backed up to `/etc/ssh/sshd_config.d.orig/` when `sshd_clean_config_d: true`
+
+## Cleaning sshd_config.d
+
+Some cloud providers (AWS, DigitalOcean, Hetzner, etc.) add files to `/etc/ssh/sshd_config.d/`
+that may override your settings (e.g., `PasswordAuthentication yes`).
+
+To remove these overrides:
+
+```yaml
+sshd_clean_config_d: true
+```
+
+Original files will be backed up to `/etc/ssh/sshd_config.d.orig/` on first run.
 
 ## Examples
 
 ### Basic usage
 
 ```yaml
+sshd_allow_users:
+  - deploy
+```
+
+### Clean cloud provider overrides
+
+```yaml
+sshd_clean_config_d: true
 sshd_allow_users:
   - deploy
 ```
