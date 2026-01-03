@@ -1,5 +1,4 @@
 ---
----
 - name: sshd | Fail if distro is not supported
   ansible.builtin.fail:
     msg: "Distribution '{{ ansible_distribution }}' is not supported. Supported: Debian, Ubuntu"
