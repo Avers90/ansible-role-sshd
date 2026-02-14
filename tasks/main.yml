@@ -1,12 +1,12 @@
 ---
 - name: sshd | Fail if distro is not supported
   ansible.builtin.fail:
-    msg: "Distribution '{{ ansible_distribution }}' is not supported. Supported: Debian, Ubuntu"
-  when: ansible_distribution not in ['Debian', 'Ubuntu']
+    msg: "Distribution '{{ ansible_facts['distribution'] }}' is not supported. Supported: Debian, Ubuntu"
+  when: ansible_facts['distribution'] not in ['Debian', 'Ubuntu']
 
 - name: sshd | Include distro-specific variables
   ansible.builtin.include_vars:
-    file: "{{ ansible_distribution }}.yml"
+    file: "{{ ansible_facts['distribution'] }}.yml"
 
 - name: sshd | Check if sshd_config backup exists
   ansible.builtin.stat:
@@ -27,7 +27,7 @@
   ansible.builtin.stat:
     path: /etc/ssh/sshd_config.d.orig
   register: sshd_config_d_backup
-  when: sshd_clean_config_d
+  when: sshd_clean_config_d | bool
 
 - name: sshd | Backup sshd_config.d directory
   ansible.builtin.copy:
@@ -38,7 +38,7 @@
     group: root
     mode: "0755"
   when:
-    - sshd_clean_config_d
+    - sshd_clean_config_d | bool
     - not sshd_config_d_backup.stat.exists
 
 - name: sshd | Find config files in sshd_config.d
@@ -46,7 +46,7 @@
     paths: /etc/ssh/sshd_config.d
     patterns: "*.conf"
   register: sshd_config_d_files
-  when: sshd_clean_config_d
+  when: sshd_clean_config_d | bool
 
 - name: sshd | Remove all files in sshd_config.d
   ansible.builtin.file:
@@ -57,7 +57,7 @@
     label: "{{ item.path }}"
   notify: Restart sshd
   when:
-    - sshd_clean_config_d
+    - sshd_clean_config_d | bool
     - sshd_config_d_files.files | length > 0
 
 - name: sshd | Deploy sshd configuration
