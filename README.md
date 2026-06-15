@@ -9,7 +9,7 @@ Configure and harden SSH daemon.
 ## Supported Distributions
 
 - Debian (bullseye, bookworm)
-- Ubuntu (focal, jammy, noble)
+- Ubuntu (focal, jammy, noble, resolute)
 
 Other distributions will fail with an error message.
 
@@ -22,6 +22,7 @@ Other distributions will fail with an error message.
 | `sshd_port` | `22` | SSH port |
 | `sshd_address_family` | `inet` | Address family (inet, inet6, any) |
 | `sshd_clean_config_d` | `false` | Remove all files from /etc/ssh/sshd_config.d/ |
+| `sshd_manage_socket` | `true` | Manage systemd `ssh.socket` port override (Ubuntu 24.04+) |
 
 ### Authentication
 
@@ -86,6 +87,21 @@ Other distributions will fail with an error message.
 
 - Original configuration is backed up to `/etc/ssh/sshd_config.orig` on first run
 - Original sshd_config.d files are backed up to `/etc/ssh/sshd_config.d.orig/` when `sshd_clean_config_d: true`
+
+## systemd socket activation (Ubuntu 24.04+/26.04)
+
+On Ubuntu 24.04 noble and 26.04 resolute SSH is started via `ssh.socket`
+(systemd socket activation). In this mode:
+
+- The listening port is owned by `ssh.socket` (`ListenStream=`), **not** by `Port`
+  in `sshd_config` — changing `sshd_port` alone has no effect.
+- Each connection spawns a fresh `sshd`, so `sshd_config` changes (crypto, auth)
+  are applied to new connections automatically.
+
+When `sshd_manage_socket: true` (default) and `sshd_port != 22`, the role deploys
+`/etc/systemd/system/ssh.socket.d/override.conf` to set the listening port and
+restarts `ssh.socket` (not `ssh.service`, which would conflict). On hosts without
+socket activation (most Debian installs) the role restarts `ssh.service` as before.
 
 ## Cleaning sshd_config.d
 

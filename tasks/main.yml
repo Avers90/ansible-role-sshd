@@ -8,6 +8,21 @@
   ansible.builtin.include_vars:
     file: "{{ ansible_facts['distribution'] }}.yml"
 
+- name: sshd | Detect systemd socket activation (ssh.socket)
+  ansible.builtin.command: systemctl is-enabled ssh.socket
+  register: sshd_socket_is_enabled
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: sshd_manage_socket | bool
+
+- name: sshd | Set socket activation fact
+  ansible.builtin.set_fact:
+    sshd_socket_activated: >-
+      {{ (sshd_manage_socket | bool)
+         and (sshd_socket_is_enabled.rc | default(1)) == 0
+         and ('enabled' in (sshd_socket_is_enabled.stdout | default(''))) }}
+
 - name: sshd | Check if sshd_config backup exists
   ansible.builtin.stat:
     path: /etc/ssh/sshd_config.orig
@@ -68,4 +83,43 @@
     group: root
     mode: "0644"
     validate: "sshd -t -f %s"
+  notify: Restart sshd
+
+# Socket activation: the listening port is owned by ssh.socket, not sshd_config.
+# Deploy a drop-in to override ListenStream when a non-default port is used.
+- name: sshd | Create ssh.socket drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/ssh.socket.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when:
+    - sshd_socket_activated | default(false) | bool
+    - sshd_port | int != 22
+
+- name: sshd | Deploy ssh.socket port override
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ssh.socket.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+    # First empty ListenStream clears the default (port 22), then set the new port.
+    content: |
+      # {{ ansible_managed }}
+      [Socket]
+      ListenStream=
+      ListenStream={{ sshd_port }}
+  when:
+    - sshd_socket_activated | default(false) | bool
+    - sshd_port | int != 22
+  notify: Restart sshd
+
+- name: sshd | Remove ssh.socket port override when using default port
+  ansible.builtin.file:
+    path: /etc/systemd/system/ssh.socket.d/override.conf
+    state: absent
+  when:
+    - sshd_socket_activated | default(false) | bool
+    - sshd_port | int == 22
   notify: Restart sshd

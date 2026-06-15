@@ -6,6 +6,12 @@ sshd_clean_config_d: false
 sshd_port: 22
 sshd_address_family: inet
 
+# Manage systemd socket activation (Ubuntu 24.04+/Debian with ssh.socket).
+# When ssh.socket is enabled, the listening port is owned by the socket,
+# not by sshd_config. The role deploys a socket drop-in to keep the port
+# in sync and restarts ssh.socket instead of ssh.service.
+sshd_manage_socket: true
+
 # Authentication
 sshd_permit_root_login: "no"
 sshd_password_authentication: "no"
@@ -39,7 +45,7 @@ sshd_use_dns: "no"
 # Crypto (modern and secure)
 sshd_ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
 sshd_macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256"
-sshd_kex_algorithms: "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512"
+sshd_kex_algorithms: "mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512"
 
 # Other
 sshd_log_level: VERBOSE

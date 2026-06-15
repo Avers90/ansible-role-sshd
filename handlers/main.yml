@@ -1,5 +1,11 @@
 ---
+# When ssh.socket is active, the socket owns the listening port; restarting
+# ssh.service would conflict with it (Conflicts=ssh.socket). Restart the unit
+# that actually listens. sshd_config changes are picked up automatically by new
+# connections under socket activation (Accept=yes); the socket restart only
+# re-applies the listening port from the drop-in.
 - name: Restart sshd
-  ansible.builtin.service:
-    name: "{{ sshd_service_name }}"
+  ansible.builtin.systemd:
+    name: "{{ 'ssh.socket' if (sshd_socket_activated | default(false) | bool) else sshd_service_name }}"
     state: restarted
+    daemon_reload: true
