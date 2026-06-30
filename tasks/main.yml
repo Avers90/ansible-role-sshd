@@ -75,6 +75,41 @@
     - sshd_clean_config_d | bool
     - sshd_config_d_files.files | length > 0
 
+# Filter crypto lists to algorithms the host's OpenSSH actually supports.
+# Prevents `sshd -t` from rejecting the whole config when a newer algorithm
+# (e.g. post-quantum mlkem768x25519-sha256, OpenSSH 9.9+) is unknown on an
+# older host (e.g. OpenSSH 9.6 on Ubuntu 24.04).
+- name: sshd | Query supported KexAlgorithms
+  ansible.builtin.command: ssh -Q kex
+  register: sshd_supported_kex
+  changed_when: false
+  check_mode: false
+
+- name: sshd | Query supported Ciphers
+  ansible.builtin.command: ssh -Q cipher
+  register: sshd_supported_ciphers
+  changed_when: false
+  check_mode: false
+
+- name: sshd | Query supported MACs
+  ansible.builtin.command: ssh -Q mac
+  register: sshd_supported_macs
+  changed_when: false
+  check_mode: false
+
+- name: sshd | Compute host-supported crypto lists
+  ansible.builtin.set_fact:
+    # Keep the desired order, drop anything the host does not support.
+    sshd_kex_algorithms_effective: >-
+      {{ sshd_kex_algorithms | split(',')
+         | select('in', sshd_supported_kex.stdout_lines) | join(',') }}
+    sshd_ciphers_effective: >-
+      {{ sshd_ciphers | split(',')
+         | select('in', sshd_supported_ciphers.stdout_lines) | join(',') }}
+    sshd_macs_effective: >-
+      {{ sshd_macs | split(',')
+         | select('in', sshd_supported_macs.stdout_lines) | join(',') }}
+
 - name: sshd | Deploy sshd configuration
   ansible.builtin.template:
     src: sshd_config.j2

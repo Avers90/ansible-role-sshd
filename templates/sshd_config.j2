@@ -32,10 +32,10 @@ AllowUsers {{ sshd_allow_users | join(' ') }}
 AllowGroups {{ sshd_allow_groups | join(' ') }}
 {% endif %}
 
-# Crypto
-Ciphers {{ sshd_ciphers }}
-MACs {{ sshd_macs }}
-KexAlgorithms {{ sshd_kex_algorithms }}
+# Crypto (filtered to algorithms supported by the host's OpenSSH)
+Ciphers {{ sshd_ciphers_effective | default(sshd_ciphers) }}
+MACs {{ sshd_macs_effective | default(sshd_macs) }}
+KexAlgorithms {{ sshd_kex_algorithms_effective | default(sshd_kex_algorithms) }}
 
 # Forwarding
 X11Forwarding {{ sshd_x11_forwarding }}

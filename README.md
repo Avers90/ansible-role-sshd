@@ -69,6 +69,13 @@ Other distributions will fail with an error message.
 | `sshd_macs` | modern MACs | Allowed MACs |
 | `sshd_kex_algorithms` | modern KEX | Allowed key exchange algorithms |
 
+The crypto lists are **filtered per host** at runtime: the role queries the host's
+OpenSSH (`ssh -Q kex/cipher/mac`) and drops any algorithm the local OpenSSH does not
+support, preserving the desired order. This lets the same default list include
+post-quantum KEX (`mlkem768x25519-sha256`, OpenSSH 9.9+) without breaking `sshd -t`
+validation on older hosts (e.g. OpenSSH 9.6 on Ubuntu 24.04), where the unknown
+algorithm is silently removed instead of rejecting the whole config.
+
 ### Other
 
 | Variable | Default | Description |
