@@ -76,6 +76,10 @@ post-quantum KEX (`mlkem768x25519-sha256`, OpenSSH 9.9+) without breaking `sshd 
 validation on older hosts (e.g. OpenSSH 9.6 on Ubuntu 24.04), where the unknown
 algorithm is silently removed instead of rejecting the whole config.
 
+`sntrup761x25519-sha512` is listed under both names: the standardized one (OpenSSH 9.9+)
+and the legacy `@openssh.com` alias (OpenSSH 8.5+), so 9.6 hosts still negotiate a
+post-quantum KEX. OpenSSH 10.1+ clients warn when a session does not use one.
+
 ### Other
 
 | Variable | Default | Description |
